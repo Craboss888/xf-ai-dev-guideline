@@ -1,32 +1,39 @@
-# xf_ai_develop_guideline
+# cc-preflight
 
-一套「用 AI 从 0 解决问题」的 Claude Code skill —— 协作守则。
-**方向与验收标准由人来定，AI 负责执行，并随时接受校验。**
+开发环境「起飞前检查」的 Claude Code skill——**新项目开工前手动触发一次，把环境配好并逐项验证**，然后才开始真正的开发。
 
-## 它管什么
+> 前身为 `xf-ai-dev-guideline`（协作守则文档版）。v2 重构为**环境安装器**：规则不再住在 skill 正文里，而是作为「载荷」写进每个项目的 CLAUDE.md（每个会话自动加载），skill 只负责安装与验证。
 
-- **5 条铁律**：① 不主动开工（等放行）② 诚实有据、不编造 ③ 交付前自检 ④ 缺权限先问、不绕路 ⑤ 先计划再动手
-- **6 步工作流**：对齐验收标准 → 不懂先讲原理 → 出计划 → 先攻最难核心并实测 → 逐步报告 → 卡住先说
-- **每轮自检**：核心验证了没 / 有没有跑偏 / 该记的记了没 / 有没有绕路
-- **文件管理**：每个项目只维护 `CLAUDE.md`（最重要的）+ 开发日志（细碎过程）
-- **测试规范**：每个测试单独文件夹、目标明确
-- `templates/`：XML 结构的启动 prompt + 常用追加指令
-- `hook/`：每轮自检 stop hook（脚本 + 配置说明）
+## 它做三件事（+ 验证）
+
+1. **项目记忆文件**——按模板生成 CLAUDE.md（内含协作铁律、回答方式、每轮自检、数据安全规则）+ 开发日志.md 骨架
+2. **目录结构**——`scripts/ docs/ data/ tests/ references/ output/` 按项目类型裁剪，所有东西有明确的家
+3. **必备装备**——按 manifest 清单检测 → 安装 → 验证常用 skills / plugins（playwright、frontend-design、superpowers、agent-reach、web-design-engineer）
+
+最后输出 ✅ / ⚠️ / ❌ 逐项验证清单（附证据），宣布 preflight 完成后停下等任务指令。
+
+## 设计原则
+
+- **仅用户手动触发**：frontmatter `disable-model-invocation: true`——环境安装有副作用，不让模型自作主张
+- **幂等**：已存在的不覆盖、要改的先备份、拿不准的先问
+- **诚实汇报**：装不了的（需重启 / 缺权限 / 缺网络）如实标注，绝不谎报已装
 
 ## 安装
 
-克隆到 Claude Code 的 skills 目录（目标目录名用下划线版，与 skill 名一致）：
-
 ```bash
-git clone https://github.com/Craboss888/xf-ai-dev-guideline.git ~/.claude/skills/xf_ai_develop_guideline
+git clone https://github.com/Craboss888/cc-preflight.git ~/.claude/skills/cc-preflight
 ```
 
-重开 Claude Code 会话后，可 `/xf_ai_develop_guideline` 调用，或按描述自动触发。
+重开 Claude Code 会话后，在项目根目录敲 `/cc-preflight` 触发。
 
-## 用法
+## 结构
 
-新任务开始时，先加载本 skill，再用 `templates/启动prompt.md` 开场、填空即可。
-
----
-
-个人开发方法论，欢迎参考自用。
+```
+SKILL.md                     # 编排流程：侦察→记忆文件→目录结构→装备→可选hook→验证汇报
+templates/CLAUDE.md骨架.md    # 投放载荷：协作铁律 / 回答方式 / 每轮自检 / 数据安全
+templates/开发日志骨架.md
+templates/启动prompt.md       # preflight 后的开场模板（含装不了 skill 环境的后备版）
+templates/常用指令.md          # 过程中随手用的追加指令
+manifest/必备装备清单.md       # 装备清单：每项的用途 / 检测 / 安装指引 / 验证
+hook/                        # 可选：每轮自检 stop hook（脚本 + 配置说明）
+```
